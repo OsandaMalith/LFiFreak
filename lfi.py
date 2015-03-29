@@ -12,6 +12,17 @@ import re
 # A full LFi exploitation tool. You might have seen plenty of tools online but this is very unique. 
 # Uses PHPInput, PHPFilter and DataURI methods
 # My own logic and own code ;)
+#
+# Notes:	Please note this tool may contain errors, and is provided "as it is". There is no guarantee
+#		that it will work on your target systems(s), as	the code may have to be adapted. 
+#		This is to avoid script kiddie abuse as well. 
+#		
+# License:
+# This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. 
+# To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/.
+# Author: Osanda Malith Jayathissa 
+# Website: http://osandamalith.wordpress.com
+# Special thanks to M.Yasoob Ullah Khalid (https://freepythontips.wordpress.com/) for always helping me in thinking Pythonically ;)
 
 class lfi(object):
 	def __init__(self, url=None, cookie=None, command=None, files=None, isShell=False):
