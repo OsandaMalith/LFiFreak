@@ -12,8 +12,7 @@ A unique tool for exploiting local file inclusions using PHP Input, PHP Filter a
 
 <h3>What is this all about?</h3>
 
-Once again as like the SkypeFreak this application is a forensic tool for Google Chrome. I am sure you will love it.
-You can investigate the history, downloads, bookmarks, cookies and also get a full report.
+
 
 <h3>Dependencies</h3>
 
@@ -21,7 +20,7 @@ You can investigate the history, downloads, bookmarks, cookies and also get a fu
 
 <h3>Disclaimer</h3>
 
-I am not responsible for any kind of illegal acts you cause. This is meant to be used for ethical purposes by forensic investigators. If you plan to copy, redistribute please give credits to the original author.
+I am not responsible for any kind of illegal acts you cause. This is meant to be used for ethical purposes by penetration testers. If you plan to copy, redistribute please give credits to the original author.
 
 Video: https://www.youtube.com/watch?v=k3ekEmTlyIA <br>
 Follow Me: https://twitter.com/OsandaMalith
