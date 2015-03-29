@@ -22,7 +22,7 @@ A unique tool for exploiting local file inclusions using PHP Input, PHP Filter a
 
 I am not responsible for any kind of illegal acts you cause. This is meant to be used for ethical purposes by penetration testers. If you plan to copy, redistribute please give credits to the original author.
 
-Video: https://www.youtube.com/watch?v=k3ekEmTlyIA <br>
+Video: http://youtu.be/g0SHHV7DHx8 <br>
 Follow Me: https://twitter.com/OsandaMalith
 
 
