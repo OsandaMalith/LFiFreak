@@ -1,3 +1,5 @@
 Windows Binary:
+http://www.mediafire.com/download/l07660857cqo9ur/LFI.exe
 
 Linux Binary:
+http://www.mediafire.com/download/1m3a188637v3avo/lfi
