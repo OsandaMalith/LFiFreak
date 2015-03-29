@@ -341,6 +341,7 @@ def banner():
 		|  |`   |  |   \   --.\ '-'  ||  \  \ 
 		`--'    `--'    `----' `--`--'`--'`--'
                                               
+-= An Automated File Inclusion Exploiter =-
 
 [*] Author: Osanda Malith Jayathissa
 [*] E-Mail: osanda[cat]unseen.is
