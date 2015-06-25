@@ -1,6 +1,5 @@
 LFI Freak
 =============
-A unique tool for exploiting local file inclusions using PHP Input, PHP Filter and Data URI methods.
 
 <img src="http://i.imgur.com/DocnEG1.png">
 
@@ -11,8 +10,7 @@ A unique tool for exploiting local file inclusions using PHP Input, PHP Filter a
 * Written in Python 2.7
 
 <h3>What is this all about?</h3>
-
-
+A unique tool for exploiting local file inclusions using PHP Input, PHP Filter and Data URI methods.
 
 <h3>Dependencies</h3>
 
