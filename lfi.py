@@ -118,7 +118,7 @@ class lfi(object):
 		html = BeautifulSoup(page.read(), 'lxml')
 		match = re.search(rnd+r'(.+?)'+rnd, html.text, flags=re.DOTALL)
 		try: return (match.group(1))
-		except: return ("[!] Error Occured")
+		except: return ("[!] Error Occurred")
 		page.close()
 
 	def phpFilter(self):
@@ -132,7 +132,7 @@ class lfi(object):
 		html = BeautifulSoup(page.read(), 'lxml')
 		match = re.search(r'(?:[A-Za-z0-9+/]{4}){2,}(?:[A-Za-z0-9+/]{2}[AEIMQUYcgkosw048]=|[A-Za-z0-9+/][AQgw]==)', html.text, flags=re.DOTALL).group()
 		try: return str(match).decode('base64')
-		except: return ("[!] Error Occured")
+		except: return ("[!] Error Occurred")
 		page.close()
 
 	def dataURI(self):
